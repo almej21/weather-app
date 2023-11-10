@@ -377,7 +377,7 @@ export const fetchCitiesAutoComplete = (prefix) => {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `http://dataservice.accuweather.com/locations/v1/cities/autocomplete?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh&q=${prefix}`
+        `http://dataservice.accuweather.com/locations/v1/cities/autocomplete?apikey=rXx3fwFek6U6g7aBtAGlRwAFCufQLeAm&q=${prefix}`
       )
       .then((res) => {
         const citiesArray = res.data.map((item) => ({
@@ -394,6 +394,7 @@ export const fetchCitiesAutoComplete = (prefix) => {
   });
 };
 
+// this api end point is currently not working, as for 10.11.23
 export const fetchWeatherByCity = (locationKey) => {
   // return new Promise((resolve, reject) => {
   //   resolve(json2[0]);
@@ -402,40 +403,38 @@ export const fetchWeatherByCity = (locationKey) => {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `http://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh`
+        `http://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=rXx3fwFek6U6g7aBtAGlRwAFCufQLeAm`
       )
       .then((res) => {
-        resolve(res.data);
         resolve(res.data[0]);
       })
       .catch((err) => {
-        reject(json2[0]);
+        // reject(json2[0]);
         // console.log("ERROR:", err);
-        // reject(err);
+        reject(err);
       });
   });
 };
 
 export const fetchFiveDays = (locationKey) => {
   // return new Promise((resolve, reject) => {
-  //   const daysWeather = json3.DailyForecasts.map((item) => ({
-  //     day: getDayName(item.Date),
-  //     minTemp: item.Temperature.Minimum.Value,
-  //     maxTemp: item.Temperature.Maximum.Value,
-  //   }));
-  //   resolve(daysWeather);
+  //   // const daysWeather = json3.DailyForecasts.map((item) => ({
+  //   //   day: getDayName(item.Date),
+  //   //   minTemp: item.Temperature.Minimum.Value,
+  //   //   maxTemp: item.Temperature.Maximum.Value,
+  //   // }));
+  //   resolve(json3);
   // });
 
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `http://dataservice.accuweather.com/currentconditions/v1/daily/5day/${locationKey}?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh`
+        `http://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=rXx3fwFek6U6g7aBtAGlRwAFCufQLeAm&metric=true`
       )
       .then((res) => {
         resolve(res.data);
       })
       .catch((err) => {
-        // reject(json3.DailyForecasts);
         console.log("ERROR:", err);
         reject(err);
       });

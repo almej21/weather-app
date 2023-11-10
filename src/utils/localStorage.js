@@ -1,6 +1,6 @@
 export const get = (key) => {
-  const item = localStorage.getItem(key);
-  return item ? JSON.parse(item) : null;
+  const item = JSON.parse(localStorage.getItem(key));
+  return item;
 };
 
 export const set = (key, value) => {

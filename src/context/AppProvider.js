@@ -5,7 +5,13 @@ export const AppContext = createContext();
 
 const AppProvider = ({ children }) => {
   const [favoritesArray, setFavoritesArray] = useState([]);
-  const [cityWeatherObj, setCityWeatherObj] = useState({});
+  const [selectedCityWeatherObj, setSelectedCityWeatherObj] = useState({
+    locationKey: "",
+    city: "",
+    temp: "",
+    weather: "",
+    daysArray: [],
+  });
   const [mode, setMode] = useState("light");
 
   useEffect(() => {
@@ -28,10 +34,8 @@ const AppProvider = ({ children }) => {
       value={{
         favoritesArray,
         setFavoritesArray,
-        cityWeatherObj,
-        setCityWeatherObj,
-        mode,
-        setMode,
+        selectedCityWeatherObj,
+        setSelectedCityWeatherObj,
       }}
     >
       {children}
