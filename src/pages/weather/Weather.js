@@ -1,5 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import MuiAlert from "@mui/material/Alert";
 import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
@@ -35,6 +36,21 @@ function getDayName(timestamp) {
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
+
+const containsSameKeyValue = (arrayOfObjects, objToCheck) => {
+  // Iterate through the array of objects
+  for (const obj of arrayOfObjects) {
+    // Check if every key-value pair in objToCheck is present in the current object
+    if (
+      Object.entries(objToCheck).every(([key, value]) => obj[key] === value)
+    ) {
+      return true; // Found a matching object
+    }
+  }
+
+  // No matching object found
+  return false;
+};
 
 export default function Weather() {
   const [citiesAutoComplete, setCitiesAutoComplete] = useState([]);
@@ -99,18 +115,27 @@ export default function Weather() {
         ServerApi.fetchFiveDays(lastSelectedCityKey),
       ])
         .then((data) => {
+          const obj = {
+            city: lastSelectedCityLabel,
+          };
+
+          const cityExists = containsSameKeyValue(favoritesArray, obj);
+
           const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
             day: getDayName(item.Date),
             minTemp: item.Temperature.Minimum.Value,
             maxTemp: item.Temperature.Maximum.Value,
           }));
+
           const weatherData = {
             locationKey: lastSelectedCityKey,
+            favorite: cityExists,
             city: lastSelectedCityLabel,
             temp: data[0].Temperature.Metric.Value,
             weather: data[0].WeatherText,
             daysArray: daysWeatherArr,
           };
+
           setSelectedCityWeatherObj(weatherData);
         })
         .catch((err) => {
@@ -127,13 +152,23 @@ export default function Weather() {
           ServerApi.fetchFiveDays(key),
         ])
           .then((data) => {
+            const obj = {
+              city: default_city,
+            };
+            const cityExists = containsSameKeyValue(
+              LocalStorage.get("favorite-cities"),
+              obj
+            );
+
             const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
               day: getDayName(item.Date),
               minTemp: item.Temperature.Minimum.Value,
               maxTemp: item.Temperature.Maximum.Value,
             }));
+
             const weatherData = {
               locationKey: key,
+              favorite: cityExists,
               city: default_city,
               temp: data[0].Temperature.Metric.Value,
               weather: data[0].WeatherText,
@@ -151,12 +186,26 @@ export default function Weather() {
 
   const handleAddFavorite = () => {
     setToast({ ...toast, open: true });
+    setSelectedCityWeatherObj({ ...selectedCityWeatherObj, favorite: true });
+
     const cityExists = favoritesArray.some(
       (city) => JSON.stringify(city) === JSON.stringify(selectedCityWeatherObj)
     );
     if (!cityExists) {
       setFavoritesArray([...favoritesArray, selectedCityWeatherObj]);
     }
+  };
+
+  const handleRemoveFavorite = () => {
+    setSelectedCityWeatherObj({ ...selectedCityWeatherObj, favorite: false });
+
+    const updatedArray = favoritesArray.filter(
+      (obj) => obj.city !== selectedCityWeatherObj.city
+    );
+
+    LocalStorage.set("favorite-cities", updatedArray);
+
+    setFavoritesArray(updatedArray);
   };
 
   const handleCloseToast = (event, reason) => {
@@ -206,9 +255,21 @@ export default function Weather() {
               <h2>{selectedCityWeatherObj.city}</h2>
               <h2>{selectedCityWeatherObj.temp}°c</h2>
             </div>
-            <div className="add-favorite" onClick={handleAddFavorite}>
-              <FavoriteBorderIcon />
-              add to favorites
+            <div>
+              {selectedCityWeatherObj.favorite ? (
+                <div
+                  className="favorite-btn remove"
+                  onClick={handleRemoveFavorite}
+                >
+                  <RemoveCircleIcon />
+                  remove from favorites
+                </div>
+              ) : (
+                <div className="favorite-btn add" onClick={handleAddFavorite}>
+                  <FavoriteBorderIcon />
+                  add to favorites
+                </div>
+              )}
             </div>
           </div>
           <h1>{selectedCityWeatherObj.weather}</h1>

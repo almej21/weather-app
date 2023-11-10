@@ -7,17 +7,16 @@ const AppProvider = ({ children }) => {
   const [favoritesArray, setFavoritesArray] = useState([]);
   const [selectedCityWeatherObj, setSelectedCityWeatherObj] = useState({
     locationKey: "",
+    favorite: false,
     city: "",
     temp: "",
     weather: "",
-    daysArray: [],
+    citiesArray: [],
   });
-  const [mode, setMode] = useState("light");
 
   useEffect(() => {
-    if (LocalStorage.get("favorite-days")) {
-      console.log(LocalStorage.get("favorite-days"));
-      setFavoritesArray(LocalStorage.get("favorite-days"));
+    if (LocalStorage.get("favorite-cities")) {
+      setFavoritesArray(LocalStorage.get("favorite-cities"));
     }
   }, []);
 
@@ -25,7 +24,7 @@ const AppProvider = ({ children }) => {
     if (favoritesArray != null && favoritesArray.length > 0) {
       const keyValueArrayString = JSON.stringify(favoritesArray);
 
-      localStorage.setItem("favorite-days", keyValueArrayString);
+      localStorage.setItem("favorite-cities", keyValueArrayString);
     }
   }, [favoritesArray]);
 
