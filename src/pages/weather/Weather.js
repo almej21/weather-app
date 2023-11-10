@@ -94,9 +94,12 @@ export default function Weather() {
       let lastSelectedCityKey = LocalStorage.get("last_selected_city_key");
       let lastSelectedCityLabel = LocalStorage.get("last_selected_city_label");
 
-      ServerApi.fetchFiveDays(lastSelectedCityKey)
+      Promise.all([
+        ServerApi.fetchWeatherByCity(lastSelectedCityKey),
+        ServerApi.fetchFiveDays(lastSelectedCityKey),
+      ])
         .then((data) => {
-          const daysWeatherArr = data.DailyForecasts.map((item) => ({
+          const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
             day: getDayName(item.Date),
             minTemp: item.Temperature.Minimum.Value,
             maxTemp: item.Temperature.Maximum.Value,
@@ -104,15 +107,11 @@ export default function Weather() {
           const weatherData = {
             locationKey: lastSelectedCityKey,
             city: lastSelectedCityLabel,
-            temp:
-              (data.DailyForecasts[0].Temperature.Maximum.Value +
-                data.DailyForecasts[0].Temperature.Minimum.Value) /
-              2,
-            weather: data.DailyForecasts[0].Day.IconPhrase,
+            temp: data[0].Temperature.Metric.Value,
+            weather: data[0].WeatherText,
             daysArray: daysWeatherArr,
           };
           setSelectedCityWeatherObj(weatherData);
-          console.log("today weather: ", weatherData);
         })
         .catch((err) => {
           console.log("error fetching data");
@@ -123,9 +122,12 @@ export default function Weather() {
       if (key === "") {
         key = "215854"; //tel aviv key
         let default_city = "Tel Aviv"; //tel aviv key
-        ServerApi.fetchFiveDays(key)
+        Promise.all([
+          ServerApi.fetchWeatherByCity(key),
+          ServerApi.fetchFiveDays(key),
+        ])
           .then((data) => {
-            const daysWeatherArr = data.DailyForecasts.map((item) => ({
+            const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
               day: getDayName(item.Date),
               minTemp: item.Temperature.Minimum.Value,
               maxTemp: item.Temperature.Maximum.Value,
@@ -133,15 +135,11 @@ export default function Weather() {
             const weatherData = {
               locationKey: key,
               city: default_city,
-              temp:
-                (data.DailyForecasts[0].Temperature.Maximum.Value +
-                  data.DailyForecasts[0].Temperature.Minimum.Value) /
-                2,
-              weather: data.DailyForecasts[0].Day.IconPhrase,
+              temp: data[0].Temperature.Metric.Value,
+              weather: data[0].WeatherText,
               daysArray: daysWeatherArr,
             };
             setSelectedCityWeatherObj(weatherData);
-            console.log("today weather: ", weatherData);
           })
           .catch((err) => {
             console.log("error fetching data");
@@ -149,34 +147,15 @@ export default function Weather() {
       }
     }
     // api call for current weather
-    // if (key !== "") {
-    //   Promise.all([
-    //     ServerApi.fetchWeatherByCity(key),
-    //     ServerApi.fetchFiveDays(key),
-    //   ])
-    //     .then((data) => {
-    //       const weatherData = {
-    //         city: selectedSearchValue.label,
-    //         temp: data[0].Temperature.Metric.Value,
-    //         weather: data[0].WeatherText,
-    //         daysArray: data[1],
-    //       };
-    //       console.log(weatherData);
-    //       setSelectedCityWeatherObj(weatherData);
-    //     })
-    //     .catch((err) => {
-    //       console.log("error fetching data");
-    //     });
-    // }
   }, [selectedSearchValue]);
 
   const handleAddFavorite = () => {
     setToast({ ...toast, open: true });
     const cityExists = favoritesArray.some(
-      (city) => JSON.stringify(city) === JSON.stringify(weatherPageData)
+      (city) => JSON.stringify(city) === JSON.stringify(selectedCityWeatherObj)
     );
     if (!cityExists) {
-      setFavoritesArray([...favoritesArray, weatherPageData]);
+      setFavoritesArray([...favoritesArray, selectedCityWeatherObj]);
     }
   };
 
