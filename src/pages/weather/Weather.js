@@ -51,8 +51,8 @@ export default function Weather() {
   }, []);
 
   const [selectedSearchValue, setSelectedSearchValue] = useState({
-    label: "Tel Aviv",
-    locationKey: "215854",
+    label: "",
+    locationKey: "",
   });
 
   const {
@@ -83,20 +83,18 @@ export default function Weather() {
       label: newValue.label,
       locationKey: newValue.locationKey,
     };
-    LocalStorage.set("last_selected_city", newCityObj.label);
+    LocalStorage.set("last_selected_city_label", newCityObj.label);
+    LocalStorage.set("last_selected_city_key", newCityObj.locationKey);
     setSelectedSearchValue(newCityObj);
   };
 
   useEffect(() => {
     var key = selectedSearchValue.locationKey;
-    let lastSelectedCity;
-    if (LocalStorage.get("last_selected_city")) {
-      lastSelectedCity = LocalStorage.get("last_selected_city");
-    }
+    if (LocalStorage.get("last_selected_city_label")) {
+      let lastSelectedCityKey = LocalStorage.get("last_selected_city_key");
+      let lastSelectedCityLabel = LocalStorage.get("last_selected_city_label");
 
-    // use this when the current weather api end point is not available.
-    if (key !== "") {
-      ServerApi.fetchFiveDays(key)
+      ServerApi.fetchFiveDays(lastSelectedCityKey)
         .then((data) => {
           const daysWeatherArr = data.DailyForecasts.map((item) => ({
             day: getDayName(item.Date),
@@ -104,11 +102,8 @@ export default function Weather() {
             maxTemp: item.Temperature.Maximum.Value,
           }));
           const weatherData = {
-            locationKey: key,
-            city:
-              lastSelectedCity !== ""
-                ? lastSelectedCity
-                : selectedSearchValue.label,
+            locationKey: lastSelectedCityKey,
+            city: lastSelectedCityLabel,
             temp:
               (data.DailyForecasts[0].Temperature.Maximum.Value +
                 data.DailyForecasts[0].Temperature.Minimum.Value) /
@@ -122,8 +117,37 @@ export default function Weather() {
         .catch((err) => {
           console.log("error fetching data");
         });
+    } else {
+      // this case is when the user never selected a city.
+      // use this when the current weather api end point is not available.
+      if (key === "") {
+        key = "215854"; //tel aviv key
+        let default_city = "Tel Aviv"; //tel aviv key
+        ServerApi.fetchFiveDays(key)
+          .then((data) => {
+            const daysWeatherArr = data.DailyForecasts.map((item) => ({
+              day: getDayName(item.Date),
+              minTemp: item.Temperature.Minimum.Value,
+              maxTemp: item.Temperature.Maximum.Value,
+            }));
+            const weatherData = {
+              locationKey: key,
+              city: default_city,
+              temp:
+                (data.DailyForecasts[0].Temperature.Maximum.Value +
+                  data.DailyForecasts[0].Temperature.Minimum.Value) /
+                2,
+              weather: data.DailyForecasts[0].Day.IconPhrase,
+              daysArray: daysWeatherArr,
+            };
+            setSelectedCityWeatherObj(weatherData);
+            console.log("today weather: ", weatherData);
+          })
+          .catch((err) => {
+            console.log("error fetching data");
+          });
+      }
     }
-
     // api call for current weather
     // if (key !== "") {
     //   Promise.all([
