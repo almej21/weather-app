@@ -384,7 +384,17 @@ export const fetchCitiesAutoComplete = (prefix) => {
           label: item.LocalizedName,
           locationKey: item.Key,
         }));
-        resolve(citiesArray);
+
+        const uniqueLabels = new Set();
+        const array = citiesArray.filter((obj) => {
+          if (!uniqueLabels.has(obj.label)) {
+            uniqueLabels.add(obj.label);
+            return true;
+          }
+          return false;
+        });
+
+        resolve(array);
       })
       .catch((err) => {
         // reject(json1[0]);

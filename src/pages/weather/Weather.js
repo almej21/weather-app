@@ -14,10 +14,6 @@ import * as ServerApi from "utils/serverApi";
 import { useLocation } from "react-router-dom";
 import "./weather.scss";
 
-function isEmpty(obj) {
-  return Object.keys(obj).length === 0;
-}
-
 function getDayName(timestamp) {
   const daysOfWeek = [
     "Sunday",
@@ -82,8 +78,6 @@ export default function Weather() {
       ServerApi.fetchCitiesAutoComplete(searchValue)
         .then((cities) => {
           setCitiesAutoComplete(cities);
-          console.log(`response from api:`);
-          console.log(cities);
         })
         .catch(() => {
           console.log("error fetching");
@@ -103,7 +97,6 @@ export default function Weather() {
   };
 
   useEffect(() => {
-    console.log("this is useEffect with [selectedSearchValue]");
     let locationKey, cityLabel;
     if (location.state !== null) {
       locationKey = location.state.locationKey;
@@ -273,7 +266,7 @@ export default function Weather() {
         id="combo-box-demo"
         options={citiesAutoComplete}
         sx={{ width: 300 }}
-        value={selectedSearchValue}
+        value={selectedSearchValue.label}
         onChange={handleSelect}
         renderInput={(params) => (
           <TextField
@@ -282,7 +275,7 @@ export default function Weather() {
             label="Search"
             variant="outlined"
             fullWidth
-            value={selectedSearchValue}
+            value={selectedSearchValue.label}
             onChange={handleChange}
           />
         )}
