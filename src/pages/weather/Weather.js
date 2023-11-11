@@ -11,10 +11,25 @@ import { useEffect, useState } from "react";
 import * as LocalStorage from "utils/localStorage";
 import * as ServerApi from "utils/serverApi";
 
+import { useLocation } from "react-router-dom";
 import "./weather.scss";
 
 function isEmpty(obj) {
   return Object.keys(obj).length === 0;
+}
+
+function parsePathString(path) {
+  const regex = /\/home\/([^\/]+)\/(\d+)/;
+  const match = path.match(regex);
+
+  if (match) {
+    const name = match[1].replace(/%20/g, " "); // Replace '%20' with space
+    const number = match[2];
+
+    return { name, number };
+  } else {
+    return null; // Return null if the pattern doesn't match
+  }
 }
 
 function getDayName(timestamp) {
@@ -53,6 +68,7 @@ const containsSameKeyValue = (arrayOfObjects, objToCheck) => {
 };
 
 export default function Weather() {
+  const location = useLocation();
   const [citiesAutoComplete, setCitiesAutoComplete] = useState([]);
 
   const [toast, setToast] = useState({
@@ -61,10 +77,6 @@ export default function Weather() {
     horizontal: "center",
   });
   const { open } = toast;
-
-  useEffect(() => {
-    console.log("this is useEffect with []");
-  }, []);
 
   const [selectedSearchValue, setSelectedSearchValue] = useState({
     label: "",
@@ -105,6 +117,48 @@ export default function Weather() {
   };
 
   useEffect(() => {
+    console.log("this is useEffect with [selectedSearchValue]");
+    let locationKey, cityLabel;
+    if (location.state !== null) {
+      locationKey = location.state.locationKey;
+      cityLabel = location.state.cityLabel;
+    }
+
+    if (locationKey) {
+      Promise.all([
+        ServerApi.fetchWeatherByCity(locationKey),
+        ServerApi.fetchFiveDays(locationKey),
+      ])
+        .then((data) => {
+          const obj = {
+            city: cityLabel,
+          };
+
+          const cityExists = containsSameKeyValue(favoritesArray, obj);
+
+          const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
+            day: getDayName(item.Date),
+            minTemp: item.Temperature.Minimum.Value,
+            maxTemp: item.Temperature.Maximum.Value,
+          }));
+
+          const weatherData = {
+            locationKey: locationKey,
+            favorite: cityExists,
+            city: cityLabel,
+            temp: data[0].Temperature.Metric.Value,
+            weather: data[0].WeatherText,
+            daysArray: daysWeatherArr,
+          };
+
+          setSelectedCityWeatherObj(weatherData);
+        })
+        .catch((err) => {
+          console.log("error fetching data");
+        });
+      return;
+    }
+
     var key = selectedSearchValue.locationKey;
     if (LocalStorage.get("last_selected_city_label")) {
       let lastSelectedCityKey = LocalStorage.get("last_selected_city_key");

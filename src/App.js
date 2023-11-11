@@ -13,6 +13,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/home" element={<Weather />} index />
+          <Route path="/home/:name" element={<Weather />} index />
           <Route path="/" element={<Weather />} index />
           <Route path="/favorites" element={<Favorites />} />
         </Routes>
