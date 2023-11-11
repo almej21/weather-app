@@ -18,20 +18,6 @@ function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
-function parsePathString(path) {
-  const regex = /\/home\/([^\/]+)\/(\d+)/;
-  const match = path.match(regex);
-
-  if (match) {
-    const name = match[1].replace(/%20/g, " "); // Replace '%20' with space
-    const number = match[2];
-
-    return { name, number };
-  } else {
-    return null; // Return null if the pattern doesn't match
-  }
-}
-
 function getDayName(timestamp) {
   const daysOfWeek = [
     "Sunday",
