@@ -6,8 +6,13 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import TextField from "@mui/material/TextField";
 import { AppState } from "context/AppProvider";
+import {
+  addToFavorites,
+  removeFromFavorites,
+} from "features/favorites/favoritesSlice";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import * as LocalStorage from "utils/localStorage";
 import * as ServerApi from "utils/serverApi";
 
@@ -50,6 +55,7 @@ const containsSameKeyValue = (arrayOfObjects, objToCheck) => {
 };
 
 export default function Weather() {
+  const dispatch = useDispatch();
   const location = useLocation();
   const [citiesAutoComplete, setCitiesAutoComplete] = useState([]);
 
@@ -103,6 +109,7 @@ export default function Weather() {
       cityLabel = location.state.cityLabel;
     }
 
+    // if we're coming from the favorites page than display the city clicked
     if (locationKey) {
       Promise.all([
         ServerApi.fetchWeatherByCity(locationKey),
@@ -138,6 +145,7 @@ export default function Weather() {
       return;
     }
 
+    // if we are not from the city page, than display the city that was searched and selected.
     var key = selectedSearchValue.locationKey;
     if (LocalStorage.get("last_selected_city_label")) {
       let lastSelectedCityKey = LocalStorage.get("last_selected_city_key");
@@ -221,6 +229,8 @@ export default function Weather() {
     setToast({ ...toast, open: true });
     setSelectedCityWeatherObj({ ...selectedCityWeatherObj, favorite: true });
 
+    dispatch(addToFavorites({ ...selectedCityWeatherObj, favorite: true }));
+
     const cityExists = favoritesArray.some(
       (city) => JSON.stringify(city) === JSON.stringify(selectedCityWeatherObj)
     );
@@ -231,6 +241,8 @@ export default function Weather() {
 
   const handleRemoveFavorite = () => {
     setSelectedCityWeatherObj({ ...selectedCityWeatherObj, favorite: false });
+
+    dispatch(removeFromFavorites(selectedCityWeatherObj));
 
     const updatedArray = favoritesArray.filter(
       (obj) => obj.city !== selectedCityWeatherObj.city

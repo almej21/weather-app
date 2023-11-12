@@ -1,22 +1,31 @@
+import { configureStore } from "@reduxjs/toolkit";
 import AppProvider from "context/AppProvider.js";
 import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import favoritesReducer from "./features/favorites/favoritesSlice";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
+
+export const store = configureStore({
+  reducer: {
+    favorites: favoritesReducer,
+  },
+});
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   // <React.StrictMode>
+
   <BrowserRouter>
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <Provider store={store}>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </Provider>
   </BrowserRouter>
   // </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

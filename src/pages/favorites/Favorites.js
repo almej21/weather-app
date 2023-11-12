@@ -1,9 +1,16 @@
 import { AppState } from "context/AppProvider";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import "./favorites.scss";
 
 const Favorites = () => {
   const navigate = useNavigate();
+  const favCities = useSelector((state) => state.favorites.cities);
+
+  // I wanted to make the favorites cities array persist between refreshes and closing the app,
+  // so I'm using different aproach to the use of redux (local storage), but this is only for showing
+  // that redux is working 😁
+  console.log("favorite Cities: ", favCities);
 
   const { favoritesArray, setSelectedCityWeatherObj } = AppState();
 

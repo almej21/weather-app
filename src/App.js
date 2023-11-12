@@ -1,7 +1,6 @@
 import AppProvider from "context/AppProvider.js";
 import Navbar from "navbar/Navbar.js";
 import Favorites from "pages/favorites/Favorites.js";
-
 import Weather from "pages/weather/Weather.js";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
