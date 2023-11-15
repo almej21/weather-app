@@ -353,7 +353,7 @@ export const fetchCitiesAutoComplete = (prefix) => {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `http://dataservice.accuweather.com/locations/v1/cities/autocomplete?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh&q=${prefix}`
+        `https://dataservice.accuweather.com/locations/v1/cities/autocomplete?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh&q=${prefix}`
       )
       .then((res) => {
         const citiesArray = res.data.map((item) => ({
@@ -383,7 +383,7 @@ export const fetchWeatherByCity = (locationKey) => {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `http://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh`
+        `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh`
       )
       .then((res) => {
         resolve(res.data[0]);
@@ -398,7 +398,7 @@ export const fetchFiveDays = (locationKey) => {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        `http://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh&metric=true`
+        `https://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=pKZNU1qaHzzjzNOsWsWRaqxjZ5h5JSIh&metric=true`
       )
       .then((res) => {
         resolve(res.data);

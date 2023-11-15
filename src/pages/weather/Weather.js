@@ -81,6 +81,8 @@ export default function Weather() {
   const handleChange = (event) => {
     const searchValue = event.target.value;
     if (searchValue.length > 2) {
+      location.state.cityLabel = searchValue;
+
       ServerApi.fetchCitiesAutoComplete(searchValue)
         .then((cities) => {
           setCitiesAutoComplete(cities);
@@ -97,6 +99,9 @@ export default function Weather() {
       label: newValue.label,
       locationKey: newValue.locationKey,
     };
+    location.state.cityLabel = newCityObj.label;
+    location.state.locationKey = newCityObj.locationKey;
+
     LocalStorage.set("last_selected_city_label", newCityObj.label);
     LocalStorage.set("last_selected_city_key", newCityObj.locationKey);
     setSelectedSearchValue(newCityObj);
@@ -108,6 +113,7 @@ export default function Weather() {
       locationKey = location.state.locationKey;
       cityLabel = location.state.cityLabel;
     }
+    var key = selectedSearchValue.locationKey;
 
     // if we're coming from the favorites page than display the city clicked
     if (locationKey) {
@@ -146,7 +152,6 @@ export default function Weather() {
     }
 
     // if we are not from the city page, than display the city that was searched and selected.
-    var key = selectedSearchValue.locationKey;
     if (LocalStorage.get("last_selected_city_label")) {
       let lastSelectedCityKey = LocalStorage.get("last_selected_city_key");
       let lastSelectedCityLabel = LocalStorage.get("last_selected_city_label");
@@ -184,43 +189,42 @@ export default function Weather() {
         });
     } else {
       // this case is when the user never selected a city.
-      // use this when the current weather api end point is not available.
       if (key === "") {
         key = "215854"; //tel aviv key
-        let default_city = "Tel Aviv"; //tel aviv key
-        Promise.all([
-          ServerApi.fetchWeatherByCity(key),
-          ServerApi.fetchFiveDays(key),
-        ])
-          .then((data) => {
-            const obj = {
-              city: default_city,
-            };
-            const cityExists = containsSameKeyValue(
-              LocalStorage.get("favorite-cities"),
-              obj
-            );
-
-            const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
-              day: getDayName(item.Date),
-              minTemp: item.Temperature.Minimum.Value,
-              maxTemp: item.Temperature.Maximum.Value,
-            }));
-
-            const weatherData = {
-              locationKey: key,
-              favorite: cityExists,
-              city: default_city,
-              temp: data[0].Temperature.Metric.Value,
-              weather: data[0].WeatherText,
-              daysArray: daysWeatherArr,
-            };
-            setSelectedCityWeatherObj(weatherData);
-          })
-          .catch((err) => {
-            console.log("error fetching data");
-          });
+        const default_city = "Tel Aviv"; //tel aviv key
       }
+      Promise.all([
+        ServerApi.fetchWeatherByCity(key),
+        ServerApi.fetchFiveDays(key),
+      ])
+        .then((data) => {
+          const obj = {
+            city: default_city,
+          };
+          const cityExists = containsSameKeyValue(
+            LocalStorage.get("favorite-cities"),
+            obj
+          );
+
+          const daysWeatherArr = data[1].DailyForecasts.map((item) => ({
+            day: getDayName(item.Date),
+            minTemp: item.Temperature.Minimum.Value,
+            maxTemp: item.Temperature.Maximum.Value,
+          }));
+
+          const weatherData = {
+            locationKey: key,
+            favorite: cityExists,
+            city: default_city,
+            temp: data[0].Temperature.Metric.Value,
+            weather: data[0].WeatherText,
+            daysArray: daysWeatherArr,
+          };
+          setSelectedCityWeatherObj(weatherData);
+        })
+        .catch((err) => {
+          console.log("error fetching data");
+        });
     }
     // api call for current weather
   }, [selectedSearchValue]);
